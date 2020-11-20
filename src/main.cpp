@@ -3,8 +3,10 @@
 
 #define S2_Pin 7
 #define S3_Pin 8
-#define LED_Pin 9
+#define LED_Pin 11
 #define OUT_Pin 2
+#define Servo0_Pin 9
+#define Servo1_Pin 10
 
 /* 
  * S0 S1  
@@ -21,6 +23,7 @@
  */
 
 Servo servo0;
+Servo servo1;
 
 uint8_t ligado = 0;
 uint8_t ligado2 = 0;
@@ -68,26 +71,28 @@ uint32_t detecta(uint8_t State){
 
 void setup() {
   pinMode (LED_BUILTIN, OUTPUT);
-  pinMode (12, OUTPUT);
   pinMode (S2_Pin, OUTPUT);
   pinMode (S3_Pin, OUTPUT);
   pinMode (LED_Pin, OUTPUT);
   pinMode (OUT_Pin, INPUT);
   Serial.begin(1000000);
   analogWrite (LED_Pin, 0xFF);
-  servo0.attach(11);
+  servo0.attach(Servo0_Pin);
+  servo1.attach(Servo1_Pin);
 }
 
 void loop() {
-  //código do pisca
+  //Pisca início
   digitalWrite (LED_BUILTIN, ligado);
   ligado = !ligado;
+  //Pisca fim
 
   freq[0] = detecta(Clear);
   freq[1] = detecta(Red);
   freq[2] = detecta(Green);
   freq[3] = detecta(Blue);
 
+  //Teste dos servos início
   if(Serial.read() == 'Y'){
     inbuf[0] = 'Y';
     for(int i = 0; i<37; i++){
@@ -95,11 +100,12 @@ void loop() {
     }
   sscanf(inbuf, "Y%08lX-%08lX-%08lX-%08lX-Z", &pwm[0], &pwm[1], &pwm[2], &pwm[3]);
   servo0.writeMicroseconds(pwm[0]);
+  servo1.writeMicroseconds(pwm[1]);
   }
+  //Teste dos servos fim
 
-  //Print
+  //Print início
   sprintf(outbuf, "W%08lX-%08lX-%08lX-%08lX-X", freq[0], freq[1], freq[2], freq[3]);
   Serial.write(outbuf, 38);
-  //delay para deixar devagar
-  //delay (100);
+  //Print fim
 }
